@@ -501,7 +501,7 @@ async def generate_speech_streaming(
                             exaggeration=exaggeration,
                             cfg_weight=cfg_weight,
                             temperature=temperature,
-                            num_inference_steps=50,  # Optimize speed (default is likely 1000)
+                            steps=50,  # Optimize speed
                             **({'language_id': language_id} if is_multilingual() else {})
                         )
                     )

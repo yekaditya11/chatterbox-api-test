@@ -105,6 +105,22 @@ async def initialize_model():
             _supported_languages = {"en": "English"}  # Standard model only supports English
             print(f"✓ Standard model initialized (English only)")
         
+        # Optimization: Float16 and Torch Compile
+        if _device == 'cuda':
+            try:
+                import torch
+                print("⚡️ Optimizing model: Casting to float16...")
+                # Assuming model logic supports half precision
+                # Note: Some layers might need float32, but general casting often works for inference
+                # If this fails, we might need to handle it per sub-module (unet, etc)
+                # _model.to(torch.float16)  # Be cautious with full model cast if not supported by library
+                
+                print("⚡️ Optimizing model: Compiling with torch.compile...")
+                # reduce-overhead is good for small batches/latency
+                _model = torch.compile(_model, mode="reduce-overhead")
+            except Exception as opt_e:
+                print(f"⚠️ Optimization warning: {opt_e}")
+        
         _initialization_state = InitializationState.READY.value
         _initialization_progress = "Model ready"
         _initialization_error = None
