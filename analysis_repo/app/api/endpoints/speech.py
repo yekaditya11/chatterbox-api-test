@@ -490,18 +490,21 @@ async def generate_speech_streaming(
             # Use torch.no_grad() to prevent gradient accumulation
             # Use torch.no_grad() to prevent gradient accumulation
             with torch.no_grad():
-                # Run TTS generation in executor to avoid blocking
-                audio_tensor = await loop.run_in_executor(
-                    None,
-                    lambda: model.generate(
-                        text=chunk,
-                        audio_prompt_path=voice_sample_path,
-                        exaggeration=exaggeration,
-                        cfg_weight=cfg_weight,
-                        temperature=temperature,
-                        **({'language_id': language_id} if is_multilingual() else {})
+                # Acquire lock to ensure thread safety during inference
+                async with _inference_lock:
+                    # Run TTS generation in executor to avoid blocking
+                    audio_tensor = await loop.run_in_executor(
+                        None,
+                        lambda: model.generate(
+                            text=chunk,
+                            audio_prompt_path=voice_sample_path,
+                            exaggeration=exaggeration,
+                            cfg_weight=cfg_weight,
+                            temperature=temperature,
+                            num_inference_steps=50,  # Optimize speed (default is likely 1000)
+                            **({'language_id': language_id} if is_multilingual() else {})
+                        )
                     )
-                )
                 
                 # Ensure tensor is on CPU for streaming
                 if hasattr(audio_tensor, 'cpu'):
