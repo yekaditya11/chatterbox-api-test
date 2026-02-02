@@ -36,8 +36,6 @@ REQUEST_COUNTER = 0
 # Supported audio formats for voice uploads
 SUPPORTED_AUDIO_FORMATS = {'.mp3', '.wav', '.flac', '.m4a', '.ogg'}
 
-# Global inference lock to prevent concurrent model access issues
-_inference_lock = asyncio.Lock()
 
 
 
@@ -486,6 +484,7 @@ async def generate_speech_streaming(
             
             print(f"Streaming audio for chunk {i+1}/{len(chunks)}: '{chunk[:50]}{'...' if len(chunk) > 50 else ''}'")
             
+            # Use torch.no_grad() to prevent gradient accumulation
             # Use torch.no_grad() to prevent gradient accumulation
             with torch.no_grad():
                 # Run TTS generation in executor to avoid blocking
