@@ -36,6 +36,9 @@ REQUEST_COUNTER = 0
 # Supported audio formats for voice uploads
 SUPPORTED_AUDIO_FORMATS = {'.mp3', '.wav', '.flac', '.m4a', '.ogg'}
 
+# Global inference lock to prevent concurrent model access issues
+_inference_lock = asyncio.Lock()
+
 
 
 
